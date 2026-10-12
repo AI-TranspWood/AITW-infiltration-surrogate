@@ -1,6 +1,6 @@
 # Monomer infiltration saturation time surrogate model
 
-The code trains/use a multilayer perceptron to infer a mapping between the physical parameters of the delignified transparent wood composites and their monomer infiltration saturation time. Full saturation of the porous wood is necessary for obtaining bot the optical transparency and mechanical integrity of the final material.
+The code trains/uses a multilayer perceptron to infer a mapping between the physical parameters of the delignified transparent wood composites and their monomer infiltration saturation time. Full saturation of the porous wood is necessary for obtaining both the optical transparency and mechanical integrity of the final material.
 
 ## Input and output
 
