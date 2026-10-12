@@ -154,10 +154,15 @@ def train_surrogate(
     logger.info(f"Save interval: {save_interval}")
     logger.info("-" * 40)
 
-    data = pd.read_csv(data_file)
-    data = data.to_numpy()
+    data_pd = pd.read_csv(data_file)
+    data = data_pd.to_numpy()
     if np.any(data <= 0):
         logger.error("Data contains non-positive values. Log transformation cannot be applied.")
+        sys.exit(1)
+    if data.shape[1] != 7:
+        logger.error(
+            f"Data shape {data.shape} has more than 7 columns {data_pd.columns.tolist()}."
+        )
         sys.exit(1)
     data = np.log(data)
 
