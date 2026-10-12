@@ -95,8 +95,8 @@ def train_surrogate(
         data_file: str = "surrogate_data.csv",
         output_dir: str = "output",
 
-        train_test_split_ratio: float = 0.2,
-        val_test_split_ratio: float = 0.5,
+        train_ratio: float = 0.8,
+        validation_ratio: float = 0.5,
         train_batch_size: int = 100,
         val_batch_size: int = 100,
         test_batch_size: int = 1,
@@ -114,8 +114,8 @@ def train_surrogate(
         data_file (str, optional): The path to the CSV file containing the training data. Defaults to "surrogate_data.csv".
         output_dir (str, optional): The directory where the output files will be saved. Defaults to "output".
     
-        train_test_split_ratio (float, optional): The ratio of the training data to the test data. Defaults to 0.2.
-        val_test_split_ratio (float, optional): The ratio of the validation data to the test data. Defaults to 0.5.
+        train_ratio (float, optional): The ratio of the training data to the validation+test data. Defaults to 0.8.
+        validation_ratio (float, optional): The ratio of the validation data to the test data. Defaults to 0.5.
         train_batch_size (int, optional): The batch size for training. Defaults to 100.
         val_batch_size (int, optional): The batch size for validation. Defaults to 100.
         test_batch_size (int, optional): The batch size for testing. Defaults to 1.
@@ -139,29 +139,34 @@ def train_surrogate(
     logger = get_logger("train_surrogate", logfile)
     set_console_level(logger, log_level)
 
+    logger.info("-" * 40)
     logger.info(f"Training surrogate model with the following parameters:")
     logger.info(f"Number of epochs: {n_epochs}")
     logger.info(f"Patience: {patience}")
     logger.info(f"Data file: {data_file}")
     logger.info(f"Output directory: {output_dir}")
-    logger.info(f"Training/test split ratio: {train_test_split_ratio}")
-    logger.info(f"Validation/test split ratio: {val_test_split_ratio}")
+    logger.info(f"Training ratio: {train_ratio}")
+    logger.info(f"Validation ratio: {validation_ratio}")
     logger.info(f"Training batch size: {train_batch_size}")
     logger.info(f"Validation batch size: {val_batch_size}")
     logger.info(f"Testing batch size: {test_batch_size}")
     logger.info(f"Loss threshold: {loss_threshold}")
     logger.info(f"Save interval: {save_interval}")
+    logger.info("-" * 40)
 
     data = pd.read_csv(data_file)
+    data = data.to_numpy()
     if np.any(data <= 0):
         logger.error("Data contains non-positive values. Log transformation cannot be applied.")
         sys.exit(1)
-
-    data = data.to_numpy()
     data = np.log(data)
 
-    train, test = train_test_split(data, test_size=train_test_split_ratio)
-    val, test = train_test_split(test, test_size=val_test_split_ratio)
+    train, test = train_test_split(data, train_size=train_ratio)
+    val, test = train_test_split(test, train_size=validation_ratio)
+
+    logger.info(f"Training data with {train.shape[0]} / {data.shape[0]} samples")
+    logger.info(f"Validation data with {val.shape[0]} / {data.shape[0]} samples")
+    logger.info(f"Testing data with {test.shape[0]} / {data.shape[0]} samples")
 
     scaler = MinMaxScaler()
 
@@ -198,9 +203,9 @@ def train_surrogate(
             log_fn(f"Epoch {n+1} " + "-" * 20)
             train_loss = train_loop(model, train_dataloader, loss_fn, optimizer)
             val_loss = val_loop(model, val_dataloader, loss_fn)
-            log_fn(f"Patience remaining: {patience_curr}")
-            log_fn(f"Training loss: {train_loss}")
-            log_fn(f"Validation loss: {val_loss}")
+            log_fn(f"  Patience remaining: {patience_curr}")
+            log_fn(f"  Training loss: {train_loss}")
+            log_fn(f"  Validation loss: {val_loss}")
 
             loss_out.write(str(n+1) + " " + str(train_loss) + " " + str(val_loss) + "\n")
 
@@ -219,7 +224,7 @@ def train_surrogate(
 
             if save_interval > 0 and (n+1) % save_interval == 0:
                 file_path = os.path.join(output_dir, f"model_epoch_{n+1}.pt")
-                logger.debug(f"Saving model weights to {file_path}")
+                logger.debug(f"  Saving model weights to {file_path}")
                 torch.save(model.state_dict(), file_path)
 
     model.load_state_dict(best_model_weights)

@@ -24,12 +24,15 @@ verbose_map = {
     help='Number of epochs to wait before stopping the training if no improvement is observed'
 )
 @click.option(
-    '--train_test_split_ratio', type=float, default=0.2, show_default=True,
-    help='Ratio of the training data to the test data'
+    '--train_ratio', type=float, default=0.8, show_default=True,
+    help='Ratio of the dataset to be used for training. The rest will be used for validation and testing'
 )
 @click.option(
-    '--val_test_split_ratio', type=float, default=0.5, show_default=True,
-    help='Ratio of the validation data to the test data'
+    '--validation_ratio', type=float, default=0.5, show_default=True,
+    help=(
+        'Ratio of the validation data to be used from the remainder after training split. '
+        'The rest will be used for testing'
+    )
 )
 @click.option(
     '--train_batch_size', type=int, default=100, show_default=True,
@@ -58,8 +61,8 @@ def train(
         n_epochs: int = 10000,
         patience: int = 500,
 
-        train_test_split_ratio: float = 0.2,
-        val_test_split_ratio: float = 0.5,
+        train_ratio: float = 0.8,
+        validation_ratio: float = 0.5,
         train_batch_size: int = 100,
         val_batch_size: int = 100,
         test_batch_size: int = 1,
@@ -78,8 +81,8 @@ def train(
         data_file=data_file,
         output_dir=output_dir,
 
-        train_test_split_ratio=train_test_split_ratio,
-        val_test_split_ratio=val_test_split_ratio,
+        train_ratio=train_ratio,
+        validation_ratio=validation_ratio,
         train_batch_size=train_batch_size,
         val_batch_size=val_batch_size,
         test_batch_size=test_batch_size,
