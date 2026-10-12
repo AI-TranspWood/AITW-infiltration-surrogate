@@ -6,10 +6,13 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "AITW_infiltration_surrogate"
 dynamic = ["version"]
-description = "TODO"
-authors = []
-# readme = "README.md" TODO: add readme
-# license = { file = "LICENSE.txt" }  TODO: add license
+description = "Surrogate model for predicting water infiltration in wood-based materials."
+authors = [
+    {name = "Marcin Mińkowski", email = "marcin.minkowski@aalto.fi"},
+    {name = "Davide Grassano", email = "davide.grassano@epfl.ch"},
+]
+readme = "README.md"
+license = { file = "LICENSE.txt" }
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Operating System :: Microsoft :: Windows",
@@ -17,14 +20,15 @@ classifiers = [
     "Operating System :: MacOS",
     "Programming Language :: Python",
 ]
-keywords = []
+keywords = [
+    "wood", "infiltration", "surrogate", "machine learning", "deep learning", "neural networks", "torch", "pytorch"
+]
 requires-python = ">=3.11"
 dependencies = [
     "numpy",
     "scipy",
     "pandas",
     "torch",
-    # "torchvision",
     "scikit-learn",
     "trogon",
     "rich-click",
