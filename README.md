@@ -1,12 +1,13 @@
 # Monomer infiltration saturation time surrogate model
-## Summary
+
 The code trains a multilayer perceptron to infer a mapping between the physical parameters of the delignified transparent wood composites and their monomer infiltration saturation time. Full saturation of the porous wood is necessary for obtaining bot the optical transparency and mechanical integrity of the final material.
 
 ## Input and output
+
 The input of the model consists of six parameters characterizing the transparent wood sample:
 - Sample length [m] - L
-- Fluid dynamic viscosity [Pa$\cdot$s] - $\mu$
-- Longitudinal permeability [$m^2$] - $k_{long}$
+- Fluid dynamic viscosity [Pa $\cdot$ s] - $\mu$
+- Longitudinal permeability [ $m^2$ ] - $k_{long}$
 - Mean pore radius [m] - $r_{\mu}$
 - Surface tension [N/m] - $\gamma$
 - Porosity - $\phi$
@@ -14,9 +15,68 @@ The input of the model consists of six parameters characterizing the transparent
 The output is the saturation time measured in seconds.
 
 ## Dataset
-The dataset for training the surrogate model is provided in the file **surrogate_data.csv**. Each row corresponds to one simulation carried out using a Darcy-flow-based infiltration model implmented in FEniCSx 0.9. The columns correspond to the physical parameters in the same order as described above followed by the saturation time.
+
+The dataset for training the surrogate model is provided in the file [surrogate_data.csv](https://zenodo.org/records/19685811).
+Each row corresponds to one simulation carried out using a [Darcy-flow-based infiltration model](https://github.com/AI-TranspWood/AITW-Darcy-Infiltration-Model) implemented in [FEniCSx](https://fenicsproject.org/) 0.9.
+The columns correspond to the physical parameters in the same order as described above followed by the saturation time.
 
 ## Surrogate model
-The surrogate model is a multilayer perceptron implemented in PyTorch. It consists of 3 hidden layers, each with 50 neurons. ReLU is used as the activation function for every layer, and sigmoid is used in the output.
+
+The surrogate model is a multilayer perceptron implemented in [PyTorch](https://pytorch.org/).
+It consists of 3 hidden layers, each with 50 neurons. ReLU is used as the activation function for every layer, and sigmoid is used in the output.
 
 Before training both the input and output values are transformed using the logarithm function and scaled to the range (0,1).
+
+## Model weights
+
+The package also includes a set of model weights trained on the provided dataset. The weights are stored in the file [weights.pt](aitw_infiltration_surrogate/weights.pt) and have been trained with the same defaults as the CLI command `aitw-infiltration-surrogate train`:
+
+- Number of epochs: 10000
+- Patience: 500
+- train_test_split_ratio: 0.2
+- val_test_split_ratio: 0.5
+
+## Installation
+
+```bash
+cd <PATH to folder with pyproject.toml>
+pip install .
+```
+
+## Usage
+
+### CLI
+
+The installation will make available a `aitw-infiltration-surrogate` command line interface.
+
+- Run `aitw-infiltration-surrogate --help` to see the available commands.
+- Run `aitw-infiltration-surrogate train --help` to see all available options for training the surrogate model.
+- Run `aitw-infiltration-surrogate inference --help` to see all available options for running inference with the surrogate model.
+
+Example for training the surrogate model with the provided dataset:
+
+```bash
+aitw-infiltration-surrogate train --data_file surrogate_data.csv --output_dir model_output
+```
+
+Example for running inference with the surrogate model using the provided weights:
+
+```bash
+aitw-infiltration-surrogate inference --input_file input.csv
+```
+
+> [!NOTE]
+> The inference will use the weights provided in the package by default if none are specified. You can also specify your own weights using the `--weight_file` option.
+
+
+#### Tab autocompletion
+
+Enabling tab autocompletion https://click.palletsprojects.com/en/stable/shell-completion/
+
+E.G for `bash` run the command
+
+```bash
+eval "$(_AITW_INFILTRATION_SURROGATE_COMPLETE=bash_source aitw-infiltration-surrogate)"
+```
+
+You can also add it to either `~/.bashrc` or, if you are using a virtual environment, to `bin/activate` of the virtual environment to avoid running the command for every new shell.
